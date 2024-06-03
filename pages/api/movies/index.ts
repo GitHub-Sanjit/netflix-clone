@@ -6,7 +6,6 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-
   if (req.method !== "GET") {
     return res.status(405).end();
   }
@@ -14,11 +13,11 @@ export default async function handler(
   try {
     await serverAuth(req);
 
-    const movies = prismadb.movie.findMany();
-
+    const movies = await prismadb.movie.findMany();
+    console.log(movies)
     return res.status(200).json(movies);
   } catch (error) {
-    console.log({ error });
+    console.log(error);
     return res.status(400).end();
   }
 }
