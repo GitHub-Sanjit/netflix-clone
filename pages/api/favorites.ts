@@ -1,32 +1,27 @@
 import { NextApiRequest, NextApiResponse } from "next";
 
-import prismadb from "@/libs/prismadb";
+import prismadb from '@/libs/prismadb';
 import serverAuth from "@/libs/serverAuth";
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  if (req.method !== "GET") {
-    res.status(405).end();
-    return;
-  }
-
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { currentUser } = await serverAuth(req,res);
+    if (req.method !== 'GET') {
+      return res.status(405).end();
+    }
 
-    const favoriteMovies = await prismadb.movie.findMany({
+    const { currentUser } = await serverAuth(req, res);
+
+    const favoritedMovies = await prismadb.movie.findMany({
       where: {
         id: {
           in: currentUser?.favoriteIds,
-        },
-      },
+        }
+      }
     });
 
-    return res.status(200).json(favoriteMovies);
+    return res.status(200).json(favoritedMovies);
   } catch (error) {
     console.log(error);
-    res.status(400).end();
-    return
+    return res.status(500).end();
   }
 }

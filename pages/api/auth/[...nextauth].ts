@@ -1,11 +1,12 @@
+/** @format */
 
-import NextAuth, { AuthOptions } from 'next-auth';
-import GithubProvider from 'next-auth/providers/github';
-import GoogleProvider from 'next-auth/providers/google';
-import Credentials from 'next-auth/providers/credentials';
-import { PrismaAdapter } from '@next-auth/prisma-adapter';
-import { compare } from 'bcrypt';
-import prismadb from '@/libs/prismadb';
+import prismadb from '@/libs/prismadb'
+import { PrismaAdapter } from '@next-auth/prisma-adapter'
+import { compare } from 'bcrypt'
+import NextAuth, { AuthOptions } from 'next-auth'
+import Credentials from 'next-auth/providers/credentials'
+import GithubProvider from 'next-auth/providers/github'
+import GoogleProvider from 'next-auth/providers/google'
 
 export const authOptions: AuthOptions = {
   providers: [
@@ -27,34 +28,36 @@ export const authOptions: AuthOptions = {
         },
         password: {
           label: 'Password',
-          type: 'passord'
-        }
+          type: 'passord',
+        },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error('Email and password required');
+          throw new Error('Email and password required')
         }
 
-        const user = await prismadb.user.findUnique({ where: {
-          email: credentials.email
-        }});
+        const user = await prismadb.user.findUnique({
+          where: {
+            email: credentials.email,
+          },
+        })
 
         if (!user || !user.hashedPassword) {
-          throw new Error('Email does not exist');
+          throw new Error('Email does not exist')
         }
 
-        const isCorrectPassword = await compare(credentials.password, user.hashedPassword);
+        const isCorrectPassword = await compare(credentials.password, user.hashedPassword)
 
         if (!isCorrectPassword) {
-          throw new Error('Incorrect password');
+          throw new Error('Incorrect password')
         }
 
-        return user;
-      }
-    })
+        return user
+      },
+    }),
   ],
   pages: {
-    signIn: '/auth'
+    signIn: '/auth',
   },
   debug: process.env.NODE_ENV === 'development',
   adapter: PrismaAdapter(prismadb),
@@ -62,7 +65,7 @@ export const authOptions: AuthOptions = {
   jwt: {
     secret: process.env.NEXTAUTH_JWT_SECRET,
   },
-  secret: process.env.NEXTAUTH_SECRET
-};
+  secret: process.env.NEXTAUTH_SECRET,
+}
 
-export default NextAuth(authOptions);
+export default NextAuth(authOptions)
