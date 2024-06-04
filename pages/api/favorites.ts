@@ -8,22 +8,25 @@ export default async function handler(
   res: NextApiResponse
 ) {
   if (req.method !== "GET") {
-    return res.status(405).end();
+    res.status(405).end();
+    return;
   }
 
   try {
-    await serverAuth(req,res);
+    const { currentUser } = await serverAuth(req,res);
 
-    const movieCount = await prismadb.movie.count();
-    const randomIndex = Math.floor(Math.random() * movieCount);
-
-    const randomMovies = await prismadb.movie.findMany({
-      take: 1,
-      skip: randomIndex,
+    const favoriteMovies = await prismadb.movie.findMany({
+      where: {
+        id: {
+          in: currentUser?.favoriteIds,
+        },
+      },
     });
 
-    return res.status(200).json(randomMovies[0]);
+    return res.status(200).json(favoriteMovies);
   } catch (error) {
     console.log(error);
+    res.status(400).end();
+    return
   }
 }
